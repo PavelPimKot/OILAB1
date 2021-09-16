@@ -145,6 +145,7 @@ public class OIFirstLab14 implements OILAB {
      */
     private List<Double> segmentSpliterator(double pointFrom, double pointTo, int segmentCount) {
         List<Double> pointsList = new ArrayList<>();
+        --segmentCount;
         double step = (pointTo - pointFrom) / segmentCount;
         double value = pointFrom;
         for (int i = 0; i < segmentCount + 1; ++i) {
