@@ -16,34 +16,34 @@ public class OIFirstLab14 implements OILAB {
      */
     @Override
     public void execute() {
-        List<Double> segmentedPoints = segmentSpliterator(A, B, N);
-        List<ComplexNumber> incomingSignal = calculateIncomingSignalAndPrintPhaseAndAmpli(segmentedPoints);
-        calculateIntegralAndPrintPhaseAndAmpli(incomingSignal, segmentedPoints);
+        List<Double> segmentedXPoints = segmentSpliterator(A, B, N);
+        List<ComplexNumber> incomingSignal = calculateIncomingSignalAndPrintPhaseAndAmpli(segmentedXPoints);
+        calculateIntegralAndPrintPhaseAndAmpli(incomingSignal, segmentedXPoints);
     }
 
     /**
-     * @param segmentedPoints - промежуток [a,b] разбитый на n точек в каждой из которых
+     * @param segmentedXPoints - промежуток [a,b] разбитый на n точек в каждой из которых
      *                        мы считаем значение входного сигнала
      *                        f(x) = exp(ix/10)
      * @return incomingSignal - возвращает лист комплексных значений входного сигнала в каждой точке
-     * из входного промежутка segmentedPoints
+     * из входного промежутка segmentedXPoints
      */
-    private List<ComplexNumber> calculateIncomingSignalAndPrintPhaseAndAmpli(List<Double> segmentedPoints) {
+    private List<ComplexNumber> calculateIncomingSignalAndPrintPhaseAndAmpli(List<Double> segmentedXPoints) {
         List<ComplexNumber> incomingSignal = new ArrayList<>();
-        printDoubleListToConsole("x", segmentedPoints);
-        for (double segmentedPoint : segmentedPoints) {
+        printDoubleListToConsole("x", segmentedXPoints);
+        for (double segmentedPoint : segmentedXPoints) {
             ComplexNumber number = calculateIncomingSignal(new ComplexNumber(segmentedPoint, 0));
             incomingSignal.add(number);
         }
         printValuesToConsoleAndMakeFrame(incomingSignal.stream()
                         .map(ComplexNumber::getArg)
                         .collect(Collectors.toList()),
-                segmentedPoints, "Фаза входного сигнала"
+                segmentedXPoints, "Фаза входного сигнала"
         );
         printValuesToConsoleAndMakeFrame(incomingSignal.stream()
                         .map(ComplexNumber::getModule)
                         .collect(Collectors.toList()),
-                segmentedPoints, "Амплитуда входного сигнала"
+                segmentedXPoints, "Амплитуда входного сигнала"
         );
         return incomingSignal;
     }
@@ -67,19 +67,19 @@ public class OIFirstLab14 implements OILAB {
     /**
      * В данном методы мы посчитываем выходной сигнал, численно вычисляя интеграл
      *
-     * @param incomingSignal - значения входного сигнала в каждой точке из segmentArray
-     * @param segmentArray   - разбитый на n точек отрезок [a,b]
+     * @param incomingSignal - значения входного сигнала в каждой точке из segmentXArray
+     * @param segmentXArray   - разбитый на n точек отрезок [a,b]
      */
-    private void calculateIntegralAndPrintPhaseAndAmpli(List<ComplexNumber> incomingSignal, List<Double> segmentArray) {
+    private void calculateIntegralAndPrintPhaseAndAmpli(List<ComplexNumber> incomingSignal, List<Double> segmentXArray) {
         double step = (B - A) / M;
-        List<Double> segmentedPoints = segmentSpliterator(P, Q, M);
-        printDoubleListToConsole("x", segmentedPoints);
-        List<ComplexNumber> resultList = new ArrayList<>(segmentedPoints.size());
-        for (int i = 0; i < segmentedPoints.size(); ++i) {
+        List<Double> segmentedKsiPoints = segmentSpliterator(P, Q, M);
+        printDoubleListToConsole("x", segmentedKsiPoints);
+        List<ComplexNumber> resultList = new ArrayList<>(segmentXArray.size());
+        for (int i = 0; i < segmentedKsiPoints.size(); ++i) {
             resultList.add(new ComplexNumber(0, 0));
         }
-        for (int i = 0; i < segmentedPoints.size(); ++i) {
-            List<ComplexNumber> root = calculateRoot(ALPHA, segmentArray.get(i), segmentedPoints);
+        for (int i = 0; i < segmentXArray.size(); ++i) {
+            List<ComplexNumber> root = calculateRoot(ALPHA, segmentXArray.get(i), segmentedKsiPoints);
             for (int j = 0; j < resultList.size(); ++j) {
                 ComplexNumber promResult = ComplexNumber.multiply(
                         ComplexNumber.multiply(
@@ -94,12 +94,12 @@ public class OIFirstLab14 implements OILAB {
         printValuesToConsoleAndMakeFrame(resultList.stream()
                         .map(ComplexNumber::getArg)
                         .collect(Collectors.toList()),
-                segmentedPoints, "Фаза выходного сигнала"
+                segmentedKsiPoints, "Фаза выходного сигнала"
         );
         printValuesToConsoleAndMakeFrame(resultList.stream()
                         .map(ComplexNumber::getModule)
                         .collect(Collectors.toList()),
-                segmentedPoints, "Амплитуда выходного сигнала"
+                segmentedKsiPoints, "Амплитуда выходного сигнала"
         );
     }
 
