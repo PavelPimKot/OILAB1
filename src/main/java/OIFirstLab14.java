@@ -79,17 +79,16 @@ public class OIFirstLab14 implements OILAB {
     private void calculateIntegralAndPrintPhaseAndAmpli(List<ComplexNumber> incomingSignal, List<Double> segmentXArray) {
         double step = (B - A) / M;
         List<Double> segmentedKsiPoints = segmentSpliterator(P, Q, M);
-        printDoubleListToConsole("x", segmentedKsiPoints);
-        List<ComplexNumber> resultList = new ArrayList<>(segmentXArray.size());
+        printDoubleListToConsole("ksi", segmentedKsiPoints);
+        List<ComplexNumber> resultList = new ArrayList<>(segmentedKsiPoints.size());
         for (int i = 0; i < segmentedKsiPoints.size(); ++i) {
             resultList.add(new ComplexNumber(0, 0));
         }
-        for (int i = 0; i < segmentXArray.size(); ++i) {
-            List<ComplexNumber> root = calculateRoot(ALPHA, segmentXArray.get(i), segmentedKsiPoints);
-            for (int j = 0; j < resultList.size(); ++j) {
+        for (int j = 0; j < segmentedKsiPoints.size(); ++j) {
+            for (int i = 0; i < segmentXArray.size(); ++i) {
                 ComplexNumber promResult = ComplexNumber.multiply(
                         ComplexNumber.multiply(
-                                root.get(j),
+                                calculateCore(ALPHA, segmentXArray.get(i), segmentedKsiPoints.get(j)),
                                 incomingSignal.get(i)
                         )
                         , new ComplexNumber(step, 0)
@@ -116,23 +115,19 @@ public class OIFirstLab14 implements OILAB {
     }
 
     /**
-     * Функция вычисляет значения K(X,KSI) в точке X для каждого KSI
+     * Функция вычисляет значения K(X, KSI) с заданными параметрами X и KSI
+     * K(X, KSI) = i * exp(-alpha * |x - ksi|)
      *
      * @param alpha - параметр использующийся для вычисления основания, задается через константы класса
-     * @param x     - точка в которой мы считаем K(X,KSI)
-     * @param ksi   - лист точек ksi, - получаются разбиение промежутка [p,q] на m частей
-     * @return возвращает основания (лист комплексных чисел result) в точке x и на всех ksi
+     * @param x     - точка x
+     * @param ksi   - точка ksi
+     * @return значение функции K(X, KSI) в точках X и KSI
      */
-    private List<ComplexNumber> calculateRoot(double alpha, double x, List<Double> ksi) {
-        List<ComplexNumber> result = new ArrayList<>();
-        for (double ksiElement : ksi) {
-            result.add(ComplexNumber.multiply(
-                    ComplexNumber.I,
-                    new ComplexNumber(Math.exp(-alpha * Math.abs(x - ksiElement)), 0)
-                    )
-            );
-        }
-        return result;
+    private ComplexNumber calculateCore(double alpha, double x, Double ksi) {
+        return ComplexNumber.multiply(
+                ComplexNumber.I,
+                new ComplexNumber(Math.exp(-alpha * Math.abs(x - ksi)), 0)
+        );
     }
 
     /**
