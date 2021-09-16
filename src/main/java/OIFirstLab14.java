@@ -7,8 +7,8 @@ public class OIFirstLab14 implements OILAB {
     private static final double B = 5;
     private static final double P = -10;
     private static final double Q = 10;
-    private static final int M = 50;
-    private static final int N = 50;
+    private static final int M = 1000;
+    private static final int N = 1000;
     private static final double ALPHA = 1;
 
     /**
