@@ -9,7 +9,7 @@ import java.awt.*;
 import java.util.List;
 
 public class FirstApplicationFrame extends ApplicationFrame {
-    public FirstApplicationFrame(String title, List<Double> xSeries, List<Double> ySeries) {
+    public FirstApplicationFrame(String title, List<Double> xSeries, List<Double> ySeries, String lowLineTitle, String highLineTitle) {
         super(title);
         var series = new XYSeries(title);
         for (int i = 0; i < xSeries.size(); ++i) {
@@ -18,8 +18,8 @@ public class FirstApplicationFrame extends ApplicationFrame {
         var data = new XYSeriesCollection(series);
         var chart = ChartFactory.createXYLineChart(
                 title,
-                "X",
-                "F(X)",
+                lowLineTitle,
+                highLineTitle,
                 data,
                 PlotOrientation.VERTICAL,
                 false,

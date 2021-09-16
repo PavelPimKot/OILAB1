@@ -23,8 +23,8 @@ public class OIFirstLab14 implements OILAB {
 
     /**
      * @param segmentedXPoints - промежуток [a,b] разбитый на n точек в каждой из которых
-     *                        мы считаем значение входного сигнала
-     *                        f(x) = exp(ix/10)
+     *                         мы считаем значение входного сигнала
+     *                         f(x) = exp(ix/10)
      * @return incomingSignal - возвращает лист комплексных значений входного сигнала в каждой точке
      * из входного промежутка segmentedXPoints
      */
@@ -38,12 +38,18 @@ public class OIFirstLab14 implements OILAB {
         printValuesToConsoleAndMakeFrame(incomingSignal.stream()
                         .map(ComplexNumber::getArg)
                         .collect(Collectors.toList()),
-                segmentedXPoints, "Фаза входного сигнала"
+                segmentedXPoints,
+                "Фаза входного сигнала",
+                "X",
+                "f(x)"
         );
         printValuesToConsoleAndMakeFrame(incomingSignal.stream()
                         .map(ComplexNumber::getModule)
                         .collect(Collectors.toList()),
-                segmentedXPoints, "Амплитуда входного сигнала"
+                segmentedXPoints,
+                "Амплитуда входного сигнала",
+                "X",
+                "f(x)"
         );
         return incomingSignal;
     }
@@ -68,7 +74,7 @@ public class OIFirstLab14 implements OILAB {
      * В данном методы мы посчитываем выходной сигнал, численно вычисляя интеграл
      *
      * @param incomingSignal - значения входного сигнала в каждой точке из segmentXArray
-     * @param segmentXArray   - разбитый на n точек отрезок [a,b]
+     * @param segmentXArray  - разбитый на n точек отрезок [a,b]
      */
     private void calculateIntegralAndPrintPhaseAndAmpli(List<ComplexNumber> incomingSignal, List<Double> segmentXArray) {
         double step = (B - A) / M;
@@ -94,12 +100,18 @@ public class OIFirstLab14 implements OILAB {
         printValuesToConsoleAndMakeFrame(resultList.stream()
                         .map(ComplexNumber::getArg)
                         .collect(Collectors.toList()),
-                segmentedKsiPoints, "Фаза выходного сигнала"
+                segmentedKsiPoints,
+                "Фаза выходного сигнала",
+                "KSI",
+                "F(X)"
         );
         printValuesToConsoleAndMakeFrame(resultList.stream()
                         .map(ComplexNumber::getModule)
                         .collect(Collectors.toList()),
-                segmentedKsiPoints, "Амплитуда выходного сигнала"
+                segmentedKsiPoints,
+                "Амплитуда выходного сигнала",
+                "KSI",
+                "F(X)"
         );
     }
 
@@ -163,12 +175,12 @@ public class OIFirstLab14 implements OILAB {
      * @param x     - лист точек исходного интервала
      * @param title - название графика
      */
-    private void printValuesToConsoleAndMakeFrame(List<Double> y, List<Double> x, String title) {
+    private void printValuesToConsoleAndMakeFrame(List<Double> y, List<Double> x, String title, String lowLineTitle, String highLineTitle) {
         System.out.println();
         System.out.println(title);
         y.forEach(OILAB::printDoubleForExel);
         System.out.println();
-        FirstApplicationFrame frame = new FirstApplicationFrame(title, x, y);
+        FirstApplicationFrame frame = new FirstApplicationFrame(title, x, y, lowLineTitle, highLineTitle);
         frame.showFrame();
     }
 
