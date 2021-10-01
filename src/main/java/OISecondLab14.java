@@ -10,8 +10,8 @@ public class OISecondLab14 implements OILAB {
     public static final double a2 = 5;
     public static final int M = 2048;
     public static final int N = 200;
-    public static final double b1 = Math.pow(N, 2) / 4 * a1 * M;
-    public static final double b2 = b1 * -1;
+    public static final double b2 = Math.pow(N, 2) / (4 * a2 * M);
+    public static final double b1 = b2 * -1;
     public static double step;
 
 
@@ -24,6 +24,7 @@ public class OISecondLab14 implements OILAB {
     }
 
     private List<Double> segmentSpliterator(double pointFrom, double pointTo, int segmentCount) {
+        step = 0;
         List<Double> pointsList = new ArrayList<>();
         --segmentCount;
         step = (pointTo - pointFrom) / segmentCount;
@@ -61,19 +62,23 @@ public class OISecondLab14 implements OILAB {
     }
 
     public void execute() {
-        List<Double> beforePointsY = segmentSpliterator(a1, a2, N);
-        List<Double> beforePointsX = beforePointsY.stream().map(this::gaussBundle).collect(Collectors.toList());
-        printValuesToConsoleAndMakeFrame(beforePointsY, beforePointsX, "GAUSS", "X", "Y");
+        List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
+        List<Double> beforePointsY = beforePointsX.stream().map(this::gaussBundle).collect(Collectors.toList());
+        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY, "GAUSS", "X", "Y");
         printValuesToConsoleAndMakeFrame(beforePointsY, beforePointsX.stream().map(val -> 0d).collect(Collectors.toList()), "GAUSS", "X", "Y");
 
-        List<Double> resultListBeforeFFT = transferListSides(addZerosToListToSize(beforePointsX, M));
+        List<Double> resultListBeforeFFT = transferListSides(addZerosToListToSize(beforePointsY, M));
         double[] resultArray = resultListBeforeFFT.stream().mapToDouble(Double::doubleValue).toArray();
         DoubleFFT_1D FFT = new DoubleFFT_1D(M);
         FFT.realForward(resultArray);
+
         List<Double> resultListAfterFFT = DoubleStream.of(resultArray).boxed().collect(Collectors.toList());
         resultListAfterFFT = resultListAfterFFT.stream().map(val -> val * step).collect(Collectors.toList());
-        resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, M - (M - N) / 2);
-        resultListAfterFFT.forEach(System.out::println);
+        resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, (M + N) / 2);
+        List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
+        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT, "GAUSS_AFTER", "X", "Y");
+        printValuesToConsoleAndMakeFrame(resultListAfterFFT, afterXPoints.stream().map(val -> 0d).collect(Collectors.toList()), "GAUSS_AFTER", "X", "Y");
+
     }
 
 }
