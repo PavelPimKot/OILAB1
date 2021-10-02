@@ -1,9 +1,12 @@
-import org.jtransforms.fft.DoubleFFT_1D;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 public class OISecondLab14 implements OILAB {
     public static final double a1 = -5;
@@ -36,49 +39,53 @@ public class OISecondLab14 implements OILAB {
         return pointsList;
     }
 
-    private List<Double> addZerosToListToSize(List<Double> list, int size) {
+    private List<Complex> addZerosToListToSize(List<Complex> list, int size) {
         int zeroCount = size - list.size();
         for (int i = 0; i < zeroCount; i += 2) {
-            list.add(0d);
-            list.add(0, 0d);
+            list.add(new Complex(0d, 0d));
+            list.add(0, new Complex(0d, 0d));
         }
         return list;
     }
 
-    public List<Double> transferListSides(List<Double> list) {
+    public List<Complex> transferListSides(List<Complex> list) {
         int listMiddle = list.size() / 2;
-        List<Double> resultList = new ArrayList<>(list.subList(listMiddle, list.size()));
+        List<Complex> resultList = new ArrayList<>(list.subList(listMiddle, list.size()));
         resultList.addAll(list.subList(0, listMiddle));
         return resultList;
     }
 
     private void printValuesToConsoleAndMakeFrame(List<Double> x, List<Double> y, String title, String lowLineTitle, String highLineTitle) {
-        System.out.println();
-        System.out.println(title);
-        y.forEach(OILAB::printDoubleForExel);
-        System.out.println();
         FirstApplicationFrame frame = new FirstApplicationFrame(title, x, y, lowLineTitle, highLineTitle);
         frame.showFrame();
     }
 
     public void execute() {
         List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
-        List<Double> beforePointsY = beforePointsX.stream().map(this::gaussBundle).collect(Collectors.toList());
-        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY, "GAUSS", "X", "Y");
-        printValuesToConsoleAndMakeFrame(beforePointsY, beforePointsX.stream().map(val -> 0d).collect(Collectors.toList()), "GAUSS", "X", "Y");
+        List<Complex> beforePointsY = beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList());
+        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
+                .map(Complex::getArgument)
+                .collect(Collectors.toList()), "PHASE_INC", "X", "Y");
+        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
+                .map(Complex::abs)
+                .collect(Collectors.toList()), "AMPLI_INC", "X", "Y");
 
-        List<Double> resultListBeforeFFT = transferListSides(addZerosToListToSize(beforePointsY, M));
-        double[] resultArray = resultListBeforeFFT.stream().mapToDouble(Double::doubleValue).toArray();
-        DoubleFFT_1D FFT = new DoubleFFT_1D(M);
-        FFT.realForward(resultArray);
-
-        List<Double> resultListAfterFFT = DoubleStream.of(resultArray).boxed().collect(Collectors.toList());
-        resultListAfterFFT = resultListAfterFFT.stream().map(val -> val * step).collect(Collectors.toList());
+        beforePointsY = transferListSides(addZerosToListToSize(beforePointsY, M));
+        Complex[] res = new Complex[M];
+        for (int i = 0; i < M; ++i) {
+            res[i] = beforePointsY.get(i);
+        }
+        FastFourierTransformer fastFourierTransformer = new FastFourierTransformer(DftNormalization.STANDARD);
+        res = fastFourierTransformer.transform(res, TransformType.FORWARD);
+        List<Complex> resultListAfterFFT = Arrays.stream(res).sequential().map(val -> val.multiply(step)).collect(Collectors.toList());
         resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, (M + N) / 2);
         List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
-        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT, "GAUSS_AFTER", "X", "Y");
-        printValuesToConsoleAndMakeFrame(resultListAfterFFT, afterXPoints.stream().map(val -> 0d).collect(Collectors.toList()), "GAUSS_AFTER", "X", "Y");
-
+        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
+                .map(Complex::getArgument)
+                .collect(Collectors.toList()), "PHASE_FFT", "X", "Y");
+        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
+                .map(Complex::abs)
+                .collect(Collectors.toList()), "AMPLI_FFT", "X", "Y");
     }
 
 }
