@@ -1,3 +1,4 @@
+import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
@@ -25,6 +26,40 @@ public class OISecondLab14 implements OILAB {
     private double gaussBundle(double x) {
         return Math.exp(-Math.pow(x, 2));
     }
+
+    public List<Complex> discreteFT(List<Complex> fdata, int N, boolean fwd) {
+        List<Complex> resultList = new ArrayList<>(N);
+        double omega;
+        int k, n;
+        if (fwd) {
+            omega = 2.0 * Math.PI / N;
+        } else {
+            omega = -2.0 * Math.PI / N;
+        }
+        for (k = 0; k < N; k++) {
+            Complex curr = new Complex(0.0, 0.0);
+            for (n = 0; n < N; ++n) {
+                double first = fdata.get(n).getReal() * Math.cos(omega * n * k) +
+                        fdata.get(n).getImaginary() * Math.sin(omega * n * k);
+                double second = -fdata.get(n).getReal() * Math.sin(omega * n * k) +
+                        fdata.get(n).getImaginary() * Math.cos(omega * n * k);
+                curr.add(new Complex(
+                        fdata.get(n).getReal() * Math.cos(omega * n * k) +
+                                fdata.get(n).getImaginary() * Math.sin(omega * n * k),
+                        -fdata.get(n).getReal() * Math.sin(omega * n * k) +
+                                fdata.get(n).getImaginary() * Math.cos(omega * n * k)
+                ));
+            }
+            resultList.add(curr);
+        }
+        if (fwd) {
+            for (k = 0; k < N; ++k) {
+                resultList.set(k, resultList.get(k).divide(N));
+            }
+        }
+        return resultList;
+    }
+
 
     private List<Double> segmentSpliterator(double pointFrom, double pointTo, int segmentCount) {
         step = 0;
@@ -86,6 +121,24 @@ public class OISecondLab14 implements OILAB {
         printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
                 .map(Complex::abs)
                 .collect(Collectors.toList()), "AMPLI_FFT", "X", "Y");
+        DoubleFFT_1D discreteFourierTransform = new DoubleFFT_1D(M);
+        double[] resultArray = new double[M * 2];
+        for (int i = 0; i < M; i += 1) {
+            resultArray[i * 2] = beforePointsY.get(i).getReal();
+            resultArray[i * 2 + 1] = beforePointsY.get(i).getImaginary();
+        }
+        discreteFourierTransform.complexForward(resultArray);
+        List<Complex> resultListAfterDFT = new ArrayList<>();
+        for (int i = 0; i < M; i += 1) {
+            resultListAfterDFT.add(new Complex(resultArray[i * 2], resultArray[i * 2 + 1]).multiply(step));
+        }
+        resultListAfterDFT = transferListSides(resultListAfterDFT).subList((M - N) / 2, (M + N) / 2);
+        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
+                .map(Complex::getArgument)
+                .collect(Collectors.toList()), "PHASE_DFT", "X", "Y");
+        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
+                .map(Complex::abs)
+                .collect(Collectors.toList()), "AMPLI_DFT", "X", "Y");
     }
 
 }
