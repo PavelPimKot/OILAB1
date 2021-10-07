@@ -91,22 +91,31 @@ public class OISecondLab14 implements OILAB {
         List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
         List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
         List<Complex> beforePointsY = (isGauss) ?
-                beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList()) :
-                beforePointsX.stream().map(val -> new Complex(f(val), 0d)).collect(Collectors.toList());
+                beforePointsX.stream()
+                        .map(val -> new Complex(gaussBundle(val), 0d))
+                        .collect(Collectors.toList()) :
+                beforePointsX.stream()
+                        .map(val -> new Complex(f(val), 0d))
+                        .collect(Collectors.toList());
         printPhaseAndAmplitudeForValue(beforePointsX, beforePointsY, "INCOMING_" + functionName);
-        beforePointsY = transferListSides(addZerosToListToSize(beforePointsY, M));
 
+        beforePointsY = transferListSides(addZerosToListToSize(beforePointsY, M));
         Complex[] res = beforePointsY.toArray(new Complex[0]);
         FastFourierTransformer fastFourierTransformer = new FastFourierTransformer(DftNormalization.STANDARD);
         res = fastFourierTransformer.transform(res, TransformType.FORWARD);
-        List<Complex> resultListAfterFFT = Arrays.stream(res).sequential().map(val -> val.multiply(step)).collect(Collectors.toList());
+        List<Complex> resultListAfterFFT = Arrays.stream(res)
+                .sequential()
+                .map(val -> val.multiply(step))
+                .collect(Collectors.toList());
         resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, (M + N) / 2);
         printPhaseAndAmplitudeForValue(afterXPoints, resultListAfterFFT, "FFT_RES_" + functionName);
 
         DoubleFFT_1D discreteFourierTransform = new DoubleFFT_1D(M);
         double[] resultArray = convertComplexListToDoubleArray(beforePointsY);
         discreteFourierTransform.complexForward(resultArray);
-        List<Complex> resultListAfterDFT = convertDoubleArrayToComplexList(resultArray).stream().map(val -> val.multiply(step)).collect(Collectors.toList());
+        List<Complex> resultListAfterDFT = convertDoubleArrayToComplexList(resultArray).stream()
+                .map(val -> val.multiply(step))
+                .collect(Collectors.toList());
         resultListAfterDFT = transferListSides(resultListAfterDFT).subList((M - N) / 2, (M + N) / 2);
         printPhaseAndAmplitudeForValue(afterXPoints, resultListAfterDFT, "DFT_RES_" + functionName);
 
