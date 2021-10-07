@@ -79,6 +79,14 @@ public class OISecondLab14 implements OILAB {
         return resultArray;
     }
 
+    private List<Complex> convertDoubleArrayToComplexList(double[] array) {
+        List<Complex> resultList = new ArrayList<>();
+        for (int i = 0; i < M; i += 1) {
+            resultList.add(new Complex(array[i * 2], array[i * 2 + 1]));
+        }
+        return resultList;
+    }
+
     private void oneToSevenTasks1D(String functionName, boolean isGauss) {
         List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
         List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
@@ -98,10 +106,7 @@ public class OISecondLab14 implements OILAB {
         DoubleFFT_1D discreteFourierTransform = new DoubleFFT_1D(M);
         double[] resultArray = convertComplexListToDoubleArray(beforePointsY);
         discreteFourierTransform.complexForward(resultArray);
-        List<Complex> resultListAfterDFT = new ArrayList<>();
-        for (int i = 0; i < M; i += 1) {
-            resultListAfterDFT.add(new Complex(resultArray[i * 2], resultArray[i * 2 + 1]).multiply(step));
-        }
+        List<Complex> resultListAfterDFT = convertDoubleArrayToComplexList(resultArray).stream().map(val -> val.multiply(step)).collect(Collectors.toList());
         resultListAfterDFT = transferListSides(resultListAfterDFT).subList((M - N) / 2, (M + N) / 2);
         printPhaseAndAmplitudeForValue(afterXPoints, resultListAfterDFT, "DFT_RES_" + functionName);
 
