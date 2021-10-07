@@ -27,40 +27,6 @@ public class OISecondLab14 implements OILAB {
         return Math.exp(-Math.pow(x, 2));
     }
 
-    public List<Complex> discreteFT(List<Complex> fdata, int N, boolean fwd) {
-        List<Complex> resultList = new ArrayList<>(N);
-        double omega;
-        int k, n;
-        if (fwd) {
-            omega = 2.0 * Math.PI / N;
-        } else {
-            omega = -2.0 * Math.PI / N;
-        }
-        for (k = 0; k < N; k++) {
-            Complex curr = new Complex(0.0, 0.0);
-            for (n = 0; n < N; ++n) {
-                double first = fdata.get(n).getReal() * Math.cos(omega * n * k) +
-                        fdata.get(n).getImaginary() * Math.sin(omega * n * k);
-                double second = -fdata.get(n).getReal() * Math.sin(omega * n * k) +
-                        fdata.get(n).getImaginary() * Math.cos(omega * n * k);
-                curr.add(new Complex(
-                        fdata.get(n).getReal() * Math.cos(omega * n * k) +
-                                fdata.get(n).getImaginary() * Math.sin(omega * n * k),
-                        -fdata.get(n).getReal() * Math.sin(omega * n * k) +
-                                fdata.get(n).getImaginary() * Math.cos(omega * n * k)
-                ));
-            }
-            resultList.add(curr);
-        }
-        if (fwd) {
-            for (k = 0; k < N; ++k) {
-                resultList.set(k, resultList.get(k).divide(N));
-            }
-        }
-        return resultList;
-    }
-
-
     private List<Double> segmentSpliterator(double pointFrom, double pointTo, int segmentCount) {
         step = 0;
         List<Double> pointsList = new ArrayList<>();
@@ -90,20 +56,26 @@ public class OISecondLab14 implements OILAB {
         return resultList;
     }
 
-    private void printValuesToConsoleAndMakeFrame(List<Double> x, List<Double> y, String title, String lowLineTitle, String highLineTitle) {
-        FirstApplicationFrame frame = new FirstApplicationFrame(title, x, y, lowLineTitle, highLineTitle);
+    private void printValuesToConsoleAndMakeFrame(List<Double> x, List<Double> y, String title) {
+        FirstApplicationFrame frame = new FirstApplicationFrame(title, x, y, "X", "Y");
         frame.showFrame();
     }
 
-    public void execute() {
+    private void oneToSevenTasks1D(String functionName, boolean isGauss) {
         List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
-        List<Complex> beforePointsY = beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList());
+        List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
+        List<Complex> beforePointsY;
+        if (isGauss) {
+            beforePointsY = beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList());
+        } else {
+            beforePointsY = beforePointsX.stream().map(val -> new Complex(f(val), 0d)).collect(Collectors.toList());
+        }
         printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
                 .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_INC", "X", "Y");
+                .collect(Collectors.toList()), "PHASE_INC_" + functionName);
         printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
                 .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_INC", "X", "Y");
+                .collect(Collectors.toList()), "AMPLI_INC_" + functionName);
 
         beforePointsY = transferListSides(addZerosToListToSize(beforePointsY, M));
         Complex[] res = new Complex[M];
@@ -114,13 +86,12 @@ public class OISecondLab14 implements OILAB {
         res = fastFourierTransformer.transform(res, TransformType.FORWARD);
         List<Complex> resultListAfterFFT = Arrays.stream(res).sequential().map(val -> val.multiply(step)).collect(Collectors.toList());
         resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, (M + N) / 2);
-        List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
         printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
                 .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_FFT", "X", "Y");
+                .collect(Collectors.toList()), "PHASE_FFT_" + functionName);
         printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
                 .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_FFT", "X", "Y");
+                .collect(Collectors.toList()), "AMPLI_FFT_" + functionName);
         DoubleFFT_1D discreteFourierTransform = new DoubleFFT_1D(M);
         double[] resultArray = new double[M * 2];
         for (int i = 0; i < M; i += 1) {
@@ -135,10 +106,16 @@ public class OISecondLab14 implements OILAB {
         resultListAfterDFT = transferListSides(resultListAfterDFT).subList((M - N) / 2, (M + N) / 2);
         printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
                 .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_DFT", "X", "Y");
+                .collect(Collectors.toList()), "PHASE_DFT_" + functionName);
         printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
                 .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_DFT", "X", "Y");
+                .collect(Collectors.toList()), "AMPLI_DFT_" + functionName);
+    }
+
+
+    public void execute() {
+        oneToSevenTasks1D("GAUSS", true);
+        oneToSevenTasks1D("OWN_FUNCTION", false);
     }
 
 }
