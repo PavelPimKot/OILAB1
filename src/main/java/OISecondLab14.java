@@ -61,55 +61,50 @@ public class OISecondLab14 implements OILAB {
         frame.showFrame();
     }
 
+    private void printPhaseAndAmplitudeForValue(List<Double> x, List<Complex> y, String functionName) {
+        printValuesToConsoleAndMakeFrame(x, y.stream()
+                .map(Complex::getArgument)
+                .collect(Collectors.toList()), "PHASE_" + functionName);
+        printValuesToConsoleAndMakeFrame(x, y.stream()
+                .map(Complex::abs)
+                .collect(Collectors.toList()), "AMPLI_" + functionName);
+    }
+
+    private double[] convertComplexListToDoubleArray(List<Complex> points) {
+        double[] resultArray = new double[points.size() * 2];
+        for (int i = 0; i < points.size(); i += 1) {
+            resultArray[i * 2] = points.get(i).getReal();
+            resultArray[i * 2 + 1] = points.get(i).getImaginary();
+        }
+        return resultArray;
+    }
+
     private void oneToSevenTasks1D(String functionName, boolean isGauss) {
         List<Double> beforePointsX = segmentSpliterator(a1, a2, N);
         List<Double> afterXPoints = segmentSpliterator(b1, b2, N);
-        List<Complex> beforePointsY;
-        if (isGauss) {
-            beforePointsY = beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList());
-        } else {
-            beforePointsY = beforePointsX.stream().map(val -> new Complex(f(val), 0d)).collect(Collectors.toList());
-        }
-        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
-                .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_INC_" + functionName);
-        printValuesToConsoleAndMakeFrame(beforePointsX, beforePointsY.stream()
-                .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_INC_" + functionName);
-
+        List<Complex> beforePointsY = (isGauss) ?
+                beforePointsX.stream().map(val -> new Complex(gaussBundle(val), 0d)).collect(Collectors.toList()) :
+                beforePointsX.stream().map(val -> new Complex(f(val), 0d)).collect(Collectors.toList());
+        printPhaseAndAmplitudeForValue(beforePointsX, beforePointsY, "INCOMING_" + functionName);
         beforePointsY = transferListSides(addZerosToListToSize(beforePointsY, M));
-        Complex[] res = new Complex[M];
-        for (int i = 0; i < M; ++i) {
-            res[i] = beforePointsY.get(i);
-        }
+
+        Complex[] res = beforePointsY.toArray(new Complex[0]);
         FastFourierTransformer fastFourierTransformer = new FastFourierTransformer(DftNormalization.STANDARD);
         res = fastFourierTransformer.transform(res, TransformType.FORWARD);
         List<Complex> resultListAfterFFT = Arrays.stream(res).sequential().map(val -> val.multiply(step)).collect(Collectors.toList());
         resultListAfterFFT = transferListSides(resultListAfterFFT).subList((M - N) / 2, (M + N) / 2);
-        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
-                .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_FFT_" + functionName);
-        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterFFT.stream()
-                .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_FFT_" + functionName);
+        printPhaseAndAmplitudeForValue(afterXPoints, resultListAfterFFT, "FFT_RES_" + functionName);
+
         DoubleFFT_1D discreteFourierTransform = new DoubleFFT_1D(M);
-        double[] resultArray = new double[M * 2];
-        for (int i = 0; i < M; i += 1) {
-            resultArray[i * 2] = beforePointsY.get(i).getReal();
-            resultArray[i * 2 + 1] = beforePointsY.get(i).getImaginary();
-        }
+        double[] resultArray = convertComplexListToDoubleArray(beforePointsY);
         discreteFourierTransform.complexForward(resultArray);
         List<Complex> resultListAfterDFT = new ArrayList<>();
         for (int i = 0; i < M; i += 1) {
             resultListAfterDFT.add(new Complex(resultArray[i * 2], resultArray[i * 2 + 1]).multiply(step));
         }
         resultListAfterDFT = transferListSides(resultListAfterDFT).subList((M - N) / 2, (M + N) / 2);
-        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
-                .map(Complex::getArgument)
-                .collect(Collectors.toList()), "PHASE_DFT_" + functionName);
-        printValuesToConsoleAndMakeFrame(afterXPoints, resultListAfterDFT.stream()
-                .map(Complex::abs)
-                .collect(Collectors.toList()), "AMPLI_DFT_" + functionName);
+        printPhaseAndAmplitudeForValue(afterXPoints, resultListAfterDFT, "DFT_RES_" + functionName);
+
     }
 
 
